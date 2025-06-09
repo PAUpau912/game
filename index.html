@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bayanihan: Tagisan ng Talino</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f0e7;
+      color: #222;
+      padding: 20px;
+    }
+    .container {
+      max-width: 720px;
+      margin: auto;
+      padding: 25px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    button {
+      margin: 8px;
+      padding: 10px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #388e3c;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #2e7d32;
+    }
+    #status, #score-sheet {
+      margin-top: 20px;
+      font-size: 16px;
+      white-space: pre-wrap;
+    }
+    .resource {
+      font-weight: bold;
+      margin: 4px 0;
+    }
+    .score-sheet {
+      margin-top: 20px;
+      background: #e8f5e9;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    h1, h2, h3 {
+      color: #1b5e20;
+    }
+    #progress-container {
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    #progress-bar {
+      height: 20px;
+      background: #4caf50;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bayanihan: Tagisan ng Talino</h1>
+    <p id="round">Round 1 / 15</p>
+    <div id="resources">
+      <div class="resource">🌾 Pananim: <span id="crops">3</span></div>
+      <div class="resource">👨‍🌾 Manggagawa: <span id="workers">3</span></div>
+      <div class="resource">🪙 Ginto: <span id="gold">3</span></div>
+      <div class="resource">🏅 Points: <span id="points">0</span></div>
+      <div id="progress-container">
+        <div id="progress-bar"></div>
+      </div>
+    </div>
+
+    <h3>Mga Aksyon:</h3>
+    <button onclick="harvest()">🌾 Mag-ani</button>
+    <button onclick="recruit()">👨‍🌾 Recruit</button>
+    <button onclick="build()">🏗️ Magpatayo</button>
+    <button onclick="sellCrops()">💰 Magbenta ng Pananim</button>
+    <button onclick="challengeEvent()">🎲 Hamon ng Bayan</button>
+    <button onclick="quizChallenge()">❓ Quiz Challenge</button>
+
+    <div id="status"></div>
+    <div class="score-sheet">
+      <h3>📋 Score Sheet</h3>
+      <div id="score-sheet"></div>
+    </div>
+  </div>
+
+  <script>
+    let crops = 3;
+    let workers = 3;
+    let gold = 3;
+    let points = 0;
+    let round = 1;
+    const maxRounds = 15;
+    let soldThisRound = false;
+    let scoreLog = [];
+
+    function updateUI() {
+      document.getElementById("crops").textContent = crops;
+      document.getElementById("workers").textContent = workers;
+      document.getElementById("gold").textContent = gold;
+      document.getElementById("points").textContent = points;
+      document.getElementById("round").textContent = `Round ${round} / ${maxRounds}`;
+      document.getElementById("score-sheet").innerHTML = scoreLog.map((entry, i) => `🔁 R${i+1}: ${entry}`).join("<br>");
+      // Update progress bar (20 points max)
+      let progressPercent = Math.min((points / 20) * 100, 100);
+      document.getElementById("progress-bar").style.width = progressPercent + "%";
+    }
+
+    function endTurn(actionDesc) {
+      if (round % 3 === 0) {
+        let bonus = Math.floor(points / 5);
+        gold += bonus;
+        actionDesc += `\n💰 Bonus: +${bonus} ginto mula sa progreso!`;
+      }
+
+      if (points >= 20) {
+        alert(`🎉 Panalo ka! Naabot mo ang 20 puntos sa Round ${round}.`);
+        location.reload();
+        return;
+      }
+
+      scoreLog.push(actionDesc);
+      round++;
+      soldThisRound = false;
+
+      if (round > maxRounds) {
+        alert(`🏁 Tapos na ang laro!\nKabuuang puntos: ${points}`);
+        location.reload();
+        return;
+      }
+
+      updateUI();
+      document.getElementById("status").textContent = actionDesc;
+    }
+
+    function harvest() {
+      crops += 2;
+      endTurn("✅ +2 pananim mula sa pag-aani.");
+    }
+
+    function recruit() {
+      if (gold >= 2 && workers < 6) {
+        gold -= 2;
+        workers++;
+        endTurn("✅ +1 manggagawa. (-2 ginto)");
+      } else {
+        endTurn("🚫 Kailangan ng 2 ginto at hindi lalampas sa 6 manggagawa.");
+      }
+    }
+
+    function build() {
+      const choice = prompt("Piliin ang proyekto:\n1 - Paaralan 🏫 (2 pananim + 1 ginto, 1 manggagawa, +4 puntos)\n2 - Palengke 🏪 (3 pananim + 2 ginto, 1 manggagawa, +5 puntos)\n3 - Irigasyon 💧 (4 pananim + 2 ginto, 2 manggagawa, +7 puntos)");
+      let built = false;
+      let msg = "";
+
+      if (choice === "1" && crops >= 2 && gold >= 1 && workers >= 1) {
+        crops -= 2; gold -= 1; workers -= 1; points += 4;
+        msg = "🏫 Naitayo ang Paaralan! +4 puntos.";
+        built = true;
+      } else if (choice === "2" && crops >= 3 && gold >= 2 && workers >= 1) {
+        crops -= 3; gold -= 2; workers -= 1; points += 5;
+        msg = "🏪 Naitayo ang Palengke! +5 puntos.";
+        built = true;
+      } else if (choice === "3" && crops >= 4 && gold >= 2 && workers >= 2) {
+        crops -= 4; gold -= 2; workers -= 2; points += 7;
+        msg = "💧 Naitayo ang Irigasyon! +7 puntos.";
+        built = true;
+      } else {
+        msg = "🚫 Kulang ang resources para sa napiling proyekto o maling input.";
+      }
+
+      endTurn(msg);
+    }
+
+    function sellCrops() {
+      if (!soldThisRound && crops >= 1) {
+        crops--;
+        gold++;
+        points++;
+        soldThisRound = true;
+        endTurn("💰 Naka-benta ng pananim: +1 ginto, +1 punto.");
+      } else if (soldThisRound) {
+        endTurn("🚫 Isang beses lang pwedeng magbenta bawat round.");
+      } else {
+        endTurn("🚫 Wala kang pananim na maibenta.");
+      }
+    }
+
+    // Challenge events (randomized)
+    const challenges = [
+      () => {
+        if (gold >= 1) {
+          gold--;
+          endTurn("⚠️ Nawalan ka ng 1 ginto dahil sa buwis!");
+        } else {
+          endTurn("😅 Wala kang ginto para buwisan.");
+        }
+      },
+      () => {
+        if (crops >= 1) {
+          crops--;
+          endTurn("🌪️ Nasira ang ani, -1 pananim.");
+        } else {
+          endTurn("😅 Walang ani ang nasira.");
+        }
+      },
+      () => {
+        gold++;
+        endTurn("🎉 May nag-donate! +1 ginto.");
+      },
+      () => {
+        crops++;
+        endTurn("🌤️ Magandang ani! +1 pananim.");
+      },
+      () => {
+        points++;
+        endTurn("🏅 Napuri ang pamumuno mo! +1 punto.");
+      },
+      () => {
+        if (workers > 1) {
+          workers--;
+          endTurn("😓 May umalis na manggagawa, -1 manggagawa.");
+        } else {
+          endTurn("😊 Walang umalis na manggagawa.");
+        }
+      }
+    ];
+
+    function challengeEvent() {
+      const idx = Math.floor(Math.random() * challenges.length);
+      challenges[idx]();
+    }
+
+    // Quiz Challenge questions
+    const quizQuestions = [
+      {
+        question: "Ano ang tawag sa proseso ng paggawa ng pagkain gamit ang sikat ng araw?",
+        options: ["Pagluto", "Photosynthesis", "Paghinga", "Pag-inom ng tubig"],
+        answer: 1
+      },
+      {
+        question: "Ano ang pinakamalaking hayop sa mundo?",
+        options: ["Elepante", "Humpback Whale", "Blue Whale", "Giraffe"],
+        answer: 2
+      },
+      {
+        question: "Ano ang pangunahing sangkap sa tinapay?",
+        options: ["Asukal", "Harina", "Gatas", "Mantika"],
+        answer: 1
+      },
+      {
+        question: "Saan nagmula ang alak?",
+        options: ["Mansanas", "Ubas", "Saging", "Pakwan"],
+        answer: 1
+      }
+    ];
+
+    function quizChallenge() {
+      const q = quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
+      let promptText = `${q.question}\n`;
+      q.options.forEach((opt, i) => {
+        promptText += `${i + 1}. ${opt}\n`;
+      });
+
+      let answer = prompt(promptText);
+
+      if (answer === null) {
+        endTurn("Quiz challenge kinansela.");
+        return;
+      }
+
+      if (parseInt(answer) === q.answer + 1) {
+        points += 3;
+        endTurn("🎉 Tama! +3 puntos para sa quiz challenge.");
+      } else {
+        endTurn(`❌ Mali! Tamang sagot ay: ${q.options[q.answer]}`);
+      }
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
