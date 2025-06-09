@@ -63,11 +63,41 @@
       width: 0%;
       transition: width 0.5s ease;
     }
+    .instructions {
+      background: #fffde7;
+      border-left: 6px solid #fbc02d;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+    .instructions ul {
+      padding-left: 20px;
+    }
+    .instructions li {
+      margin-bottom: 8px;
+    }
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Bayanihan: Tagisan ng Talino</h1>
+    <div class="instructions">
+      <h2>📖 Panuto ng Laro</h2>
+      <p>
+        Layunin mong makaipon ng <strong>20 puntos</strong> sa loob ng <strong>15 rounds</strong>. Gamitin nang maayos ang iyong <strong>pananim, manggagawa,</strong> at <strong>ginto</strong> upang makapagtayo ng mga proyekto, magbenta ng ani, o makilahok sa mga hamon at pagsusulit.
+      </p>
+      <ul>
+        <li>🌾 <strong>Mag-ani</strong>: Makakakuha ng 2 pananim.</li>
+        <li>👨‍🌾 <strong>Recruit</strong>: Dagdag manggagawa kapalit ng 2 ginto (hanggang 6 lamang).</li>
+        <li>🏗️ <strong>Magpatayo</strong>: Gumamit ng resources para makakuha ng puntos sa pagtatayo ng proyekto.</li>
+        <li>💰 <strong>Magbenta ng Pananim</strong>: Isang beses kada round, pwedeng magbenta ng 1 pananim kapalit ng 1 ginto at 1 punto.</li>
+        <li>🎲 <strong>Hamon ng Bayan</strong>: Random na pangyayari — pwedeng mabigyan o mawalan ng resources.</li>
+        <li>❓ <strong>Quiz Challenge</strong>: Sagutan ang tanong para kumita ng +3 puntos!</li>
+      </ul>
+      <p><strong>Tip:</strong> Kada 3 rounds, may <em>bonus na ginto</em> batay sa iyong puntos!</p>
+    </div>
+
     <p id="round">Round 1 / 15</p>
     <div id="resources">
       <div class="resource">🌾 Pananim: <span id="crops">3</span></div>
